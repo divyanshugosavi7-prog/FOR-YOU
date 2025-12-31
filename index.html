@@ -1,0 +1,123 @@
+# FOR-YOU
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Year's Eve</title>
+    <style>
+        :root {
+            --bg-color: #0a0a0a;
+            --text-color: #e0e0e0;
+            --font-family: "Times New Roman", Times, serif; /* Elegant serif */
+            --transition-speed: 1.5s;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden; /* Prevent scrolling until interaction */
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        #container {
+            width: 80%;
+            max-width: 600px;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        .line {
+            opacity: 0;
+            display: none;
+            font-size: 1.25rem;
+            letter-spacing: 0.05rem;
+            font-weight: 300;
+            transition: opacity var(--transition-speed) ease-in-out;
+            margin: 0;
+        }
+
+        .line.active {
+            display: block;
+        }
+
+        .line.visible {
+            opacity: 1;
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 600px) {
+            .line {
+                font-size: 1.1rem;
+                padding: 0 20px;
+            }
+        }
+    </style>
+</head>
+<body onclick="nextLine()" onwheel="handleScroll(event)">
+
+    <div id="container">
+        <p class="line">Take your time.</p>
+        <p class="line">This isn’t meant to be rushed.</p>
+        <p class="line">Another year is beginning.</p>
+        <p class="line">And somehow…</p>
+        <p class="line">After everything,<br>after every version of me…</p>
+        <p class="line">I still choose you.</p>
+        <p class="line">Not just this year.</p>
+        <p class="line">Every year.</p>
+        <p class="line">Happy New Year.</p>
+    </div>
+
+    <script>
+        let currentLine = 0;
+        const lines = document.querySelectorAll('.line');
+        let isTransitioning = false;
+
+        // Show the first line immediately
+        window.onload = () => {
+            showLine(0);
+        };
+
+        function showLine(index) {
+            if (index < lines.length) {
+                const line = lines[index];
+                line.classList.add('active');
+                // Small timeout to ensure display: block is registered before opacity transition
+                setTimeout(() => {
+                    line.classList.add('visible');
+                }, 50);
+            }
+        }
+
+        function nextLine() {
+            if (isTransitioning || currentLine >= lines.length - 1) return;
+
+            isTransitioning = true;
+            
+            // Fade out current line
+            lines[currentLine].classList.remove('visible');
+            
+            setTimeout(() => {
+                lines[currentLine].classList.remove('active');
+                currentLine++;
+                showLine(currentLine);
+                isTransitioning = false;
+            }, 1000); // Wait for fade out before showing next
+        }
+
+        function handleScroll(event) {
+            if (event.deltaY > 0) {
+                nextLine();
+            }
+        }
+    </script>
+</body>
+</html>
