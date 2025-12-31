@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>A Magical New Year's Story ✨</title>
+    <style>
+        :root {
+            --bg-day: linear-gradient(135deg, #FFDEE9 0%, #B5FFFC 100%);
+            --bg-sunset: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --bg-night: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            --accent-pink: #FF6B6B;
+            --accent-purple: #9b59b6;
+            --glow-color: rgba(255, 200, 0, 0.8);
+        }
+
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            overflow: hidden; background: var(--bg-day);
+            transition: background 3s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none; -webkit-tap-highlight-color: transparent;
+            font-family: 'Poppins', sans-serif; /* A cute, modern font */
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23ff6b6b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-sparkle"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"></path></svg>') 12 12, auto;
+        }
+
+        @keyframes bg-flow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        #game-container {
+            position: relative; width: 100%; height: 100%;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; z-index: 10;
+        }
+
+        /* --- GLOBAL GLOW EFFECT --- */
+        #global-glow {
+            position: fixed; inset: 0;
+            background: radial-gradient(circle at center, var(--glow-color) 0%, transparent 50%);
+            opacity: 0; transition: opacity 2s ease, background 2s ease;
+            pointer-events: none; z-index: 1;
+        }
+
+        /* --- CHARACTER: LUMI --- */
+        #lumi-box {
+            position: relative; width: 180px; height: 180px;
+            transform: scale(0); opacity: 0; /* Initial hidden state */
+            animation: lumi-pop-in 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            margin-bottom: 30px; /* Space for dialogue */
+        }
+        @keyframes lumi-pop-in {
+            0% { transform: scale(0) translateY(50px); opacity: 0; }
+            80% { transform: scale(1.1) translateY(-10px); opacity: 1; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        .lumi {
+            width: 100%; height: 100%; background: #FFF;
+            border-radius: 40% 60% 60% 40% / 60% 30% 70% 40%;
+            box-shadow: 0 0 40px rgba(255,255,255,0.8), 0 0 20px 5px rgba(255,255,255,0.5);
+            position: relative; animation: blob 4s infinite alternate;
+            border: 5px solid #FFF; display: flex; justify-content: center; align-items: center;
+            transition: all 0.3s ease-out; /* For quick reactions */
+        }
+        @keyframes blob {
+            0% { border-radius: 40% 60% 60% 40% / 60% 30% 70% 40%; transform: scale(1) rotate(0deg); }
+            50% { border-radius: 60% 40% 30% 70% / 40% 60% 40% 60%; transform: scale(1.05) rotate(5deg); }
+            100% { border-radius: 40% 60% 60% 40% / 60% 30% 70% 40%; transform: scale(1) rotate(0deg); }
+        }
+
+        .face { width: 80px; height: 40px; position: relative; }
+        .eye { width: 12px; height: 12px; background: #333; border-radius: 50%; position: absolute; transition: 0.3s; }
+        .eye.l { left: 10px; } .eye.r { right: 10px; }
+        .mouth { width: 20px; height: 10px; border-bottom: 3px solid #333; border-radius: 50%; position: absolute; bottom: 0; left: 30px; transition: 0.3s; }
+        .blush { width: 20px; height: 10px; background: rgba(255,105,180,0.4); filter: blur(4px); position: absolute; top: 15px; opacity: 0; transition: opacity 0.3s; }
+        .blush.l { left: -5px; } .blush.r { right: -5px; }
+
+        /* Moods */
+        .happy .mouth { height: 15px; border-radius: 0 0 50px 50px; background: #333; border: none; }
+        .shy .blush { opacity: 1; } .shy .eye { transform: scaleY(0.5); }
+        .excited .lumi { animation: jump-spin 0.5s infinite alternate; background: #FFEB3B; }
+        @keyframes jump-spin {
+            0% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-40px) rotate(10deg); }
+            100% { transform: translateY(-20px) rotate(0deg); }
+        }
+
+        /* Emoji Reactions */
+        .emoji-bubble {
+            position: absolute; font-size: 2em; pointer-events: none;
+            animation: rise-fade 1.5s ease-out forwards;
+            left: 50%; transform: translateX(-50%);
+            z-index: 11;
+        }
+        @keyframes rise-fade {
+            0% { transform: translate(-50%, 0) scale(0.5); opacity: 0; }
+            50% { transform: translate(-50%, -50px) scale(1.2); opacity: 1; }
+            100% { transform: translate(-50%, -100px) scale(1); opacity: 0; }
+        }
+
+        /* --- DIALOGUE UI --- */
+        #ui-layer {
+            position: absolute; bottom: 10%; width: 90%; max-width: 500px;
+            background: rgba(255, 255, 255, 0.95); padding: 30px;
+            border-radius: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+            text-align: center; border: 3px solid #FFF;
+            transition: transform 0.3s ease-out; /* For clicks */
+        }
+        #text { font-size: 1.25rem; color: #333; font-weight: 600; min-height: 4em; line-height: 1.4; display: flex; align-items: center; justify-content: center; }
+        
+        .choice-row { display: flex; gap: 10px; justify-content: center; margin-top: 25px; display: none; flex-wrap: wrap; }
+        .btn {
+            background: var(--accent-pink); color: white; border: none; padding: 14px 28px;
+            border-radius: 30px; font-weight: 700; cursor: pointer; transition: 0.3s;
+            box-shadow: 0 8px 20px rgba(255,107,107,0.3);
+            font-size: 1rem;
+        }
+        .btn:hover { background: #FF5252; transform: translateY(-3px); }
+        .btn:active { transform: scale(0.95); }
+
+        /* --- SPARKLE TRAIL --- */
+        .sparkle {
+            position: fixed; pointer-events: none;
+            width: 8px; height: 8px; background: #fff; border-radius: 50%;
+            opacity: 0; animation: sparkle-fade 1s forwards;
+            box-shadow: 0 0 5px 2px rgba(255, 255, 255, 0.7);
+            z-index: 20;
+        }
+        @keyframes sparkle-fade {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(1.5) translateY(-20px); opacity: 0; }
+        }
+
+        /* --- FINALE --- */
+        #finale-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+            display: none; flex-direction: column; align-items: center;
+            justify-content: center; z-index: 100; color: white; text-align: center; padding: 20px;
+            opacity: 0; transition: opacity 1s ease;
+        }
+        .finale-title { font-size: 3rem; margin-bottom: 10px; font-weight: 800; text-shadow: 0 0 10px white; }
+        .finale-subtitle { font-size: 1.5rem; opacity: 0.9; margin-bottom: 30px; }
+        #wish-input {
+            width: 80%; max-width: 300px; padding: 15px; border-radius: 15px;
+            border: 3px solid var(--accent-pink); background: rgba(255,255,255,0.1);
+            color: white; font-size: 1.1rem; text-align: center; margin-bottom: 20px;
+            outline: none; transition: border-color 0.3s;
+        }
+        #wish-input::placeholder { color: rgba(255,255,255,0.7); }
+        #wish-input:focus { border-color: #FFEB3B; }
+        #wish-submit-btn {
+            background: #FFEB3B; color: #333; font-weight: 700;
+            box-shadow: 0 8px 20px rgba(255,235,59,0.3);
+            padding: 15px 30px; border-radius: 30px; border: none; cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        /* Wish Jar */
+        #wish-jar {
+            position: relative; width: 150px; height: 200px;
+            background: linear-gradient(to bottom, #d1f0ff, #a8e0ff);
+            border: 5px solid #8ccaff; border-radius: 10px 10px 70px 70px / 10px 10px 70px 70px;
+            box-shadow: inset 0 0 20px rgba(255,255,255,0.7), 0 10px 30px rgba(0,0,0,0.2);
+            margin-top: 30px; opacity: 0; transform: translateY(50px);
+            transition: opacity 1s ease, transform 1s ease;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+            padding-bottom: 20px;
+        }
+        #jar-cap {
+            position: absolute; top: -20px; width: 80px; height: 30px;
+            background: #a8e0ff; border-radius: 50% / 100% 100% 0 0;
+            box-shadow: 0 -5px 10px rgba(0,0,0,0.2);
+        }
+        .wish-scroll {
+            position: absolute; width: 80%; background: #fff;
+            padding: 5px; border-radius: 3px; font-size: 0.8rem;
+            color: #555; transform: translateY(-100px); opacity: 0;
+            transition: transform 0.8s ease-out, opacity 0.8s ease-out;
+            animation: float-wish 2s infinite alternate ease-in-out;
+        }
+        @keyframes float-wish {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-10px); }
+        }
+        #final-message { margin-top: 30px; font-size: 1.2rem; line-height: 1.5; }
+
+        /* --- START SCREEN --- */
+        #start-screen {
+            position: fixed; inset: 0; background: linear-gradient(135deg, #fceabb, #fbffea); z-index: 200;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            opacity: 1; transition: opacity 1s ease;
+        }
+        .start-title { font-size: 2.5rem; color: var(--accent-pink); margin-bottom: 20px; text-shadow: 2px 2px 5px rgba(0,0,0,0.1); }
+        .start-btn { 
+            padding: 18px 35px; font-size: 1.3rem; border-radius: 35px; 
+            border: none; background: var(--accent-purple); color: white; cursor: pointer; 
+            box-shadow: 0 10px 30px rgba(155,89,182,0.4); transition: 0.3s;
+            font-weight: 700;
+        }
+        .start-btn:hover { background: #8e44ad; transform: translateY(-5px); }
+        .start-btn:active { transform: scale(0.95); }
+        .hint { margin-top: 15px; font-size: 0.9rem; color: #888; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+
+        /* Global Font Import */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+    </style>
+</head>
+<body>
+
+    <audio id="bg-music" loop>
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-game-level-music-610.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <div id="global-glow"></div>
+
+    <div id="start-screen">
+        <h1 class="start-title">A Magical Gift</h1>
+        <button class="start-btn" onclick="init(event)">Begin Your Story ✨</button>
+        <p class="hint">Tap to play music & start</p>
+    </div>
+
+    <div id="game-container">
+        <div id="lumi-box">
+            <div id="lumi-char" class="lumi">
+                <div class="face">
+                    <div class="blush l"></div><div class="blush r"></div>
+                    <div class="eye l"></div><div class="eye r"></div>
+                    <div class="mouth"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="ui-layer" onclick="nextStep()">
+            <div id="text">...</div>
+            <div id="choice-row" class="choice-row"></div>
+        </div>
+    </div>
+
+    <div id="finale-overlay">
+        <h1 class="finale-title">Happy New Year! 🎉</h1>
+        <p class="finale-subtitle">Make a wish for 2026!</p>
+        <input type="text" id="wish-input" placeholder="Type your wish here..." maxlength="50">
+        <button id="wish-submit-btn" onclick="submitWish()">Seal My Wish ✨</button>
+        
+        <div id="wish-jar" style="display: none;">
+            <div id="jar-cap"></div>
+            </div>
+        <p id="final-message" style="display: none;"></p>
+        <button class="btn" style="margin-top: 40px; background: #FFEB3B; color: #333;" onclick="location.reload()">Replay the Magic</button>
+    </div>
+
+    <script>
+        const story = [
+            { t: "H-hello? Is anyone there?", m: "shy", g: "rgba(255, 200, 200, 0.6)" },
+            { t: "Oh! It's you! I've been waiting for this exact moment.", m: "happy", g: "rgba(255, 255, 150, 0.8)", e: "⭐" },
+            { t: "Can I talk to you for a moment? Just us?", m: "happy", g: "rgba(200, 255, 200, 0.7)" },
+            { t: "I know the world outside is probably buzzing right now...", m: "neutral", g: "rgba(200, 200, 255, 0.6)" },
+            { t: "But in here, with you... it feels calm. And really, really special. ✨", m: "shy", g: "rgba(255, 180, 255, 0.8)", e: "💖" },
+            { 
+                t: "Do you know why tonight, right now, feels so magical?", 
+                m: "neutral", g: "rgba(200, 200, 255, 0.7)",
+                c: [{t: "Because it's New Year's Eve!", n: 6}, {t: "Because I'm here with you?", n: 7}] 
+            },
+            { t: "That's part of it! But it's mostly because I get to share these final minutes with *you*.", m: "happy", g: "rgba(255, 255, 150, 0.8)", e: "🌟", jump: 8 },
+            { t: "Exactly! You always know just what to say... *blushes*", m: "shy", g: "rgba(255, 180, 255, 0.8)", e: "🥰", jump: 8 },
+            { t: "I was actually a little nervous to ask this, but...", m: "shy", g: "rgba(200, 200, 255, 0.7)" },
+            { 
+                t: "Do you believe some people are just... meant to stay in each other's stories?", 
+                m: "neutral", g: "rgba(255, 200, 200, 0.7)",
+                c: [{t: "I do. 🤝", n: 10}, {t: "With you, yes! ✨", n: 10}] 
+            },
+            { t: "I feel that way too. Like the universe gently nudged us together.💖", m: "happy", g: "rgba(255, 255, 150, 0.9)", e: "💫" },
+            { t: "Look! The last sunset of 2025 is fading...", m: "neutral", action: "sunset", g: "rgba(255, 100, 100, 0.7)" },
+            { t: "It's so beautiful, but not as beautiful as the way you light up my world.", m: "shy", g: "rgba(255, 150, 200, 0.8)", e: "😊" },
+            { t: "You've made this entire year sparkle for me.", m: "happy", g: "rgba(255, 255, 150, 0.9)" },
+            { t: "And I want to make sure the next one shines even brighter... with you.", m: "happy", g: "rgba(200, 255, 200, 0.9)" },
+            { 
+                t: "So, will you promise to let me be a part of your story, for all of 2026?", 
+                m: "neutral", g: "rgba(150, 200, 255, 0.8)",
+                c: [{t: "My story needs you! ❤️", n: 16}, {t: "Always and forever. 🫶", n: 16}] 
+            },
+            { t: "YES! My heart is bursting! This is the best promise ever!", m: "excited", action: "night", g: "rgba(255, 255, 0, 0.9)", e: "✨🎉" },
+            { t: "The countdown is starting! Can you feel it?", m: "excited", g: "rgba(200, 200, 255, 0.9)" },
+            { t: "3... 2... 1...", m: "excited", g: "rgba(255, 100, 100, 0.9)" },
+            { t: "HAPPY NEW YEAR!!! 🎉💖", m: "excited", action: "fireworks", g: "rgba(255, 255, 255, 1)" }
+        ];
+
+        let currentStep = 0;
+        let isTyping = false;
+        let bgMusic = document.getElementById('bg-music');
+        const lumiBox = document.getElementById('lumi-box');
+        const lumiChar = document.getElementById('lumi-char');
+        const dialogueText = document.getElementById('text');
+        const choiceRow = document.getElementById('choice-row');
+        const globalGlow = document.getElementById('global-glow');
+        const uiLayer = document.getElementById('ui-layer');
+
+        // Particle/Sparkle logic
+        let particles = [];
+        let mouse = { x: 0, y: 0 };
+
+        function init(e) {
+            e.stopPropagation();
+            document.getElementById('start-screen').style.opacity = '0';
+            setTimeout(() => { document.getElementById('start-screen').style.display = 'none'; }, 1000);
+            
+            bgMusic.volume = 0.6;
+            bgMusic.play().catch(error => console.log("Autoplay prevented:", error));
+
+            document.body.addEventListener('mousemove', handleMouseMove);
+            document.body.addEventListener('touchmove', handleTouchMove);
+            document.body.addEventListener('click', handleGlobalClick); // For haptics renderStep();
+        }
+
+        function handleGlobalClick() {
+            if ("vibrate" in navigator) {
+                navigator.vibrate(50); // Short haptic feedback
+            }
+        }
+
+        function createSparkle(x, y) {
+            const sparkle = document.createElement('div');
+            sparkle.className = 'sparkle';
+            sparkle.style.left = `${x}px`;
+            sparkle.style.top = `${y}px`;
+            document.body.appendChild(sparkle);
+            setTimeout(() => sparkle.remove(), 1000);
+        }
+
+        function handleMouseMove(e) {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+            createSparkle(e.clientX, e.clientY);
+            // Parallax for background effect
+            document.body.style.backgroundPositionX = `${-e.clientX / 50}px`;
+            document.body.style.backgroundPositionY = `${-e.clientY / 50}px`;
+        }
+
+        function handleTouchMove(e) {
+            if (e.touches.length > 0) {
+                mouse.x = e.touches[0].clientX;
+                mouse.y = e.touches[0].clientY;
+                createSparkle(e.touches[0].clientX, e.touches[0].clientY);
+                // Parallax for background effect
+                document.body.style.backgroundPositionX = `${-e.touches[0].clientX / 50}px`;
+                document.body.style.backgroundPositionY = `${-e.touches[0].clientY / 50}px`;
+            }
+        }
+
+
+        function renderStep() {
+            const node = story[currentStep];
+            isTyping = true;
+            dialogueText.innerHTML = "";
+            choiceRow.style.display = "none";
+            choiceRow.innerHTML = ""; // Clear previous choices
+
+            // Update Lumi's mood
+            lumiChar.className = "lumi " + node.m;
+            lumiBox.style.transform = "scale(1)"; // Ensure it's visible after pop-in
+
+            // Update Global Glow
+            globalGlow.style.background = `radial-gradient(circle at center, ${node.g} 0%, transparent 50%)`;
+            globalGlow.style.opacity = '1';
+
+            // Text typing animation
+            let charIndex = 0;
+            const typer = setInterval(() => {
+                if (charIndex < node.t.length) {
+                    dialogueText.innerHTML += node.t[charIndex];
+                    charIndex++;
+                } else {
+                    clearInterval(typer);
+                    isTyping = false;
+                    if (node.c) showChoices(node.c);
+                    if (node.e) spawnEmoji(node.e);
+                }
+            }, 40);
+
+            // Scene Actions
+            if (node.action === "sunset") document.body.style.background = "var(--bg-sunset)";
+            if (node.action === "night") document.body.style.background = "var(--bg-night)";
+            if (node.action === "fireworks") showFinale();
+        }
+
+        function showChoices(choices) {
+            choiceRow.style.display = "flex";
+            choices.forEach(c => {
+                const btn = document.createElement('button');
+                btn.className = "btn";
+                btn.innerText = c.t;
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    if ("vibrate" in navigator) navigator.vibrate(80); // Choice haptic
+                    currentStep = c.n;
+                    renderStep();
+                };
+                choiceRow.appendChild(btn);
+            });
+        }
+
+        function nextStep() {
+            if (isTyping || story[currentStep].c) return; // Wait for typing or choice
+            
+            // Add a little bounce to the UI layer on click
+            uiLayer.style.transform = "scale(0.98)";
+            setTimeout(() => { uiLayer.style.transform = "scale(1)"; }, 150);
+
+            if (story[currentStep].jump !== undefined) {
+                currentStep = story[currentStep].jump;
+            } else {
+                currentStep++;
+            }
+
+            if (currentStep < story.length) {
+                renderStep();
+            }
+        }
+
+        function spawnEmoji(emoji) {
+            const emo = document.createElement('div');
+            emo.className = 'emoji-bubble';
+            emo.innerText = emoji;
+            // Position above Lumi
+            const lumiRect = lumiChar.getBoundingClientRect();
+            emo.style.top = `${lumiRect.top - 30}px`;
+            emo.style.left = `${lumiRect.left + lumiRect.width / 2}px`;
+            document.body.appendChild(emo);
+            setTimeout(() => emo.remove(), 1500);
+        }
+
+        function showFinale() {
+            if ("vibrate" in navigator) navigator.vibrate([200, 100, 200]); // Strong haptic
+            bgMusic.volume = 0.3; // Fade music a bit
+
+            document.getElementById('finale-overlay').style.display = 'flex';
+            setTimeout(() => { document.getElementById('finale-overlay').style.opacity = '1'; triggerFireworks(); }, 100);
+        }
+
+        function triggerFireworks() {
+            const colors = ['#FFD700', '#FF69B4', '#ADFF2F', '#1E90FF', '#FF4500'];
+            for (let i = 0; i < 30; i++) {
+                setTimeout(() => {
+                    const fw = document.createElement('div');
+                    fw.style.position = 'fixed';
+                    fw.style.left = `${Math.random() * 100}vw`;
+                    fw.style.top = `${Math.random() * 80}vh`;
+                    fw.style.width = '10px';
+                    fw.style.height = '10px';
+                    fw.style.borderRadius = '50%';
+                    fw.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    fw.style.boxShadow = `0 0 15px 5px ${fw.style.background}`;
+                    fw.style.animation = `firework-burst 0.8s ease-out forwards`;
+                    fw.style.zIndex = '120';
+                    document.body.appendChild(fw);
+                    setTimeout(() => fw.remove(), 1000);
+                }, i * 100);
+            }
+            // Firework animation keyframes
+            const styleSheet = document.styleSheets[0];
+            styleSheet.insertRule(`@keyframes firework-burst {
+                0% { transform: scale(0); opacity: 1; }
+                50% { transform: scale(1.5); opacity: 0.8; }
+                100% { transform: scale(3); opacity: 0; }
+            }`, styleSheet.cssRules.length);
+        }
+
+        function submitWish() {
+            const input = document.getElementById('wish-input');
+            const wishText = input.value.trim();
+            if (!wishText) return;
+
+            const jar = document.getElementById('wish-jar');
+            const message = document.getElementById('final-message');
+
+            jar.style.display = 'flex';
+            setTimeout(() => {
+                jar.style.opacity = '1';
+                jar.style.transform = 'translateY(0)';
+            }, 100);
+
+            const scroll = document.createElement('div');
+            scroll.className = 'wish-scroll';
+            scroll.innerText = wishText;
+            jar.appendChild(scroll);
+
+            setTimeout(() => {
+                scroll.style.opacity = '1';
+                scroll.style.transform = 'translateY(0)';
+            }, 100);
+
+            message.innerHTML = `
+                ✨ Your wish is safe now.<br>
+                May this year be gentle, bright,<br>
+                and full of moments that make you smile 💖
+            `;
+            message.style.display = 'block';
+
+            input.style.display = 'none';
+            document.getElementById('wish-submit-btn').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
