@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Message For You</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);
+            --accent-peach: #ffecd2;
+            --accent-pink: #fcb69f;
+            --text-color: #5d5d5d;
+            --char-color: #ffcad4;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background: linear-gradient(-45deg, #fdfcfb, #ffecd2, #fcb69f, #e0c3fc);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: var(--text-color);
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        #container {
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            padding: 40px 20px;
+            border-radius: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        /* --- Character CSS --- */
+        .character-box {
+            height: 120px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        .blob {
+            width: 80px;
+            height: 70px;
+            background: var(--char-color);
+            border-radius: 50% 50% 40% 40%;
+            position: relative;
+            animation: idleBounce 3s ease-in-out infinite;
+            transition: all 0.5s ease;
+        }
+
+        .eyes {
+            position: absolute;
+            top: 35%;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            padding: 0 15px;
+            transition: all 0.3s ease;
+        }
+
+        .eye {
+            width: 8px;
+            height: 8px;
+            background: #444;
+            border-radius: 50%;
+        }
+
+        .blush {
+            position: absolute;
+            top: 55%;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            padding: 0 10px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .blush-spot {
+            width: 12px;
+            height: 6px;
+            background: #ff9a9e;
+            border-radius: 50%;
+            filter: blur(2px);
+        }
+
+        /* --- Character States --- */
+        .blob.sorry { transform: translateY(5px); height: 65px; background: #d8e2dc; }
+        .blob.sorry .eyes { transform: translateY(5px); }
+        .blob.sorry .eye { height: 2px; border-radius: 2px; }
+
+        .blob.listening { animation: idleBounce 2s ease-in-out infinite; }
+        .blob.listening .eye { height: 10px; }
+
+        .blob.happy { background: #ffcad4; }
+        .blob.happy .blush { opacity: 0.6; }
+        .blob.happy .eye { height: 5px; border-radius: 5px 5px 0 0; background: transparent; border-top: 3px solid #444; }
+
+        @keyframes idleBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* --- Text UI --- */
+        #text-content {
+            min-height: 80px;
+            font-size: 1.1rem;
+            line-height: 1.5;
+            margin-bottom: 20px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+            display: none;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            background: white;
+            color: var(--text-color);
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background: #fdfcfb;
+            transform: translateY(-2px);
+        }
+
+        .hint {
+            font-size: 0.7rem;
+            color: #aaa;
+            margin-top: 20px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="container" onclick="nextStep()">
+        <div class="character-box">
+            <div id="char" class="blob">
+                <div class="eyes">
+                    <div class="eye"></div>
+                    <div class="eye"></div>
+                </div>
+                <div class="blush">
+                    <div class="blush-spot"></div>
+                    <div class="blush-spot"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="text-content">Hi...</div>
+        
+        <div id="choice-buttons" class="btn-container">
+            </div>
+
+        <div id="tap-hint" class="hint">Tap to continue</div>
+    </div>
+
+    <script>
+        const textElement = document.getElementById('text-content');
+        const charElement = document.getElementById('char');
+        const btnContainer = document.getElementById('choice-buttons');
+        const hint = document.getElementById('tap-hint');
+
+        let currentStep = 0;
+
+        const story = [
+            { text: "Can I say something honestly?", char: "listening" },
+            { text: "I've been thinking about how I acted recently.", char: "sorry" },
+            { text: "I went out to the shop without informing you properly.", char: "sorry" },
+            { text: "I didn't tell you who I was with, and I didn't check in beforehand.", char: "sorry" },
+            { text: "I know I've done this before... and I see the pattern now.", char: "sorry" },
+            { 
+                text: "I understand that my lack of communication makes you feel ignored.", 
+                char: "sorry",
+                choices: ["I'm listening", "Go on"]
+            },
+            { text: "It wasn't fair to you. You deserve to be respected and informed.", char: "sorry" },
+            { text: "This is my mistake. I failed to prioritize the communication you value.", char: "listening" },
+            { text: "It's not about 'permission'... it's about making you feel seen and safe.", char: "listening" },
+            { text: "I promise to be better. To tell you my plans and who I'm with.", char: "happy" },
+            { text: "I want to be consistent, not just for today, but every day.", char: "happy" },
+            { text: "I'm truly sorry for making you feel like you didn't matter.", char: "sorry" },
+            { text: "I care about how you feel more than anything.", char: "happy" },
+            { text: "I'll do better. I'm here when you're ready.", char: "happy" }
+        ];
+
+        function nextStep() {
+            if (currentStep < story.length) {
+                const step = story[currentStep];
+                
+                // If there are choices, wait for button click
+                if (step.choices && btnContainer.style.display !== 'flex') {
+                    showChoices(step.choices);
+                    return;
+                }
+
+                updateUI(step);
+                currentStep++;
+            } else {
+                hint.innerText = "End of message";
+            }
+        }
+
+        function updateUI(step) {
+            // Fade out
+            textElement.style.opacity = 0;
+            btnContainer.style.display = 'none';
+            hint.style.display = 'block';
+
+            setTimeout(() => {
+                textElement.innerText = step.text;
+                charElement.className = 'blob ' + step.char;
+                textElement.style.opacity = 1;
+            }, 300);
+        }
+
+        function showChoices(choices) {
+            hint.style.display = 'none';
+            btnContainer.innerHTML = '';
+            btnContainer.style.display = 'flex';
+            
+            choices.forEach(choice => {
+                const btn = document.createElement('button');
+                btn.innerText = choice;
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    currentStep++;
+                    nextStep();
+                };
+                btnContainer.appendChild(btn);
+            });
+        }
+
+        // Initialize
+        window.onload = () => {
+            textElement.style.opacity = 1;
+        };
+    </script>
+</body>
+</html>
